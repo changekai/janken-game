@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>猜拳遊戲 ✊✌️🖐️</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #fff;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 20px rgba(130,100,255,0.8);
+      letter-spacing: 2px;
+    }
+
+    .subtitle {
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 2.5rem;
+      font-size: 0.95rem;
+    }
+
+    .scoreboard {
+      display: flex;
+      gap: 3rem;
+      margin-bottom: 2.5rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 1rem 2.5rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .score-item {
+      text-align: center;
+    }
+
+    .score-item .label {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .score-item .value {
+      font-size: 2.2rem;
+      font-weight: bold;
+      line-height: 1.2;
+    }
+
+    .score-item.player .value { color: #7c6ff7; }
+    .score-item.cpu   .value { color: #f7716a; }
+    .score-item.draw  .value { color: #f7c26a; }
+
+    .arena {
+      display: flex;
+      align-items: center;
+      gap: 3rem;
+      margin-bottom: 2.5rem;
+      min-height: 160px;
+    }
+
+    .hand-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .hand-emoji {
+      font-size: 5rem;
+      transition: transform 0.3s ease;
+      filter: drop-shadow(0 0 12px rgba(130,100,255,0.5));
+    }
+
+    .hand-emoji.cpu-hand {
+      transform: scaleX(-1);
+      filter: drop-shadow(0 0 12px rgba(247,113,106,0.5));
+    }
+
+    .hand-label {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .vs {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: rgba(255,255,255,0.2);
+    }
+
+    .result-msg {
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin-bottom: 2rem;
+      min-height: 2.4rem;
+      text-align: center;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+    }
+
+    .result-msg.win  { color: #7c6ff7; text-shadow: 0 0 20px rgba(124,111,247,0.8); }
+    .result-msg.lose { color: #f7716a; text-shadow: 0 0 20px rgba(247,113,106,0.8); }
+    .result-msg.draw { color: #f7c26a; text-shadow: 0 0 20px rgba(247,194,106,0.8); }
+
+    .choices {
+      display: flex;
+      gap: 1.2rem;
+      margin-bottom: 2rem;
+    }
+
+    .choice-btn {
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 1.2rem 1.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      min-width: 100px;
+    }
+
+    .choice-btn:hover {
+      background: rgba(124,111,247,0.2);
+      border-color: #7c6ff7;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(124,111,247,0.3);
+    }
+
+    .choice-btn:active { transform: translateY(-1px); }
+
+    .choice-btn .emoji { font-size: 2.5rem; }
+    .choice-btn .name  { font-size: 0.75rem; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
+
+    .reset-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      padding: 0.6rem 1.5rem;
+      color: rgba(255,255,255,0.4);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+      letter-spacing: 1px;
+    }
+
+    .reset-btn:hover {
+      border-color: rgba(255,255,255,0.4);
+      color: rgba(255,255,255,0.7);
+    }
+
+    .shake {
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+      0%,100% { transform: rotate(0deg); }
+      20% { transform: rotate(-15deg); }
+      40% { transform: rotate(15deg); }
+      60% { transform: rotate(-10deg); }
+      80% { transform: rotate(10deg); }
+    }
+
+    .cpu-shake {
+      animation: cpuShake 0.5s ease;
+    }
+
+    @keyframes cpuShake {
+      0%,100% { transform: scaleX(-1) rotate(0deg); }
+      20% { transform: scaleX(-1) rotate(-15deg); }
+      40% { transform: scaleX(-1) rotate(15deg); }
+      60% { transform: scaleX(-1) rotate(-10deg); }
+      80% { transform: scaleX(-1) rotate(10deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>猜拳遊戲</h1>
+  <p class="subtitle">Rock · Paper · Scissors</p>
+
+  <div class="scoreboard">
+    <div class="score-item player">
+      <div class="label">你</div>
+      <div class="value" id="player-score">0</div>
+    </div>
+    <div class="score-item draw">
+      <div class="label">平手</div>
+      <div class="value" id="draw-score">0</div>
+    </div>
+    <div class="score-item cpu">
+      <div class="label">電腦</div>
+      <div class="value" id="cpu-score">0</div>
+    </div>
+  </div>
+
+  <div class="arena">
+    <div class="hand-display">
+      <div class="hand-emoji" id="player-hand">✊</div>
+      <div class="hand-label">你的選擇</div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="hand-display">
+      <div class="hand-emoji cpu-hand" id="cpu-hand">✊</div>
+      <div class="hand-label">電腦選擇</div>
+    </div>
+  </div>
+
+  <div class="result-msg" id="result-msg">選擇你的出拳！</div>
+
+  <div class="choices">
+    <button class="choice-btn" onclick="play('rock')">
+      <span class="emoji">✊</span>
+      <span class="name">石頭</span>
+    </button>
+    <button class="choice-btn" onclick="play('scissors')">
+      <span class="emoji">✌️</span>
+      <span class="name">剪刀</span>
+    </button>
+    <button class="choice-btn" onclick="play('paper')">
+      <span class="emoji">🖐️</span>
+      <span class="name">布</span>
+    </button>
+  </div>
+
+  <button class="reset-btn" onclick="resetScore()">重置分數</button>
+
+  <script>
+    const CHOICES = {
+      rock:     { emoji: '✊', label: '石頭' },
+      scissors: { emoji: '✌️', label: '剪刀' },
+      paper:    { emoji: '🖐️', label: '布'   },
+    };
+
+    const BEATS = { rock: 'scissors', scissors: 'paper', paper: 'rock' };
+
+    let scores = { player: 0, cpu: 0, draw: 0 };
+
+    function play(playerChoice) {
+      const keys = Object.keys(CHOICES);
+      const cpuChoice = keys[Math.floor(Math.random() * keys.length)];
+
+      // animate
+      const playerEl = document.getElementById('player-hand');
+      const cpuEl    = document.getElementById('cpu-hand');
+      playerEl.classList.remove('shake');
+      cpuEl.classList.remove('cpu-shake');
+      void playerEl.offsetWidth;
+      playerEl.classList.add('shake');
+      cpuEl.classList.add('cpu-shake');
+
+      // update emojis
+      playerEl.textContent = CHOICES[playerChoice].emoji;
+      cpuEl.textContent    = CHOICES[cpuChoice].emoji;
+
+      // determine result
+      const resultEl = document.getElementById('result-msg');
+      resultEl.className = 'result-msg';
+
+      let msg, cls;
+      if (playerChoice === cpuChoice) {
+        msg = '🤝 平手！';
+        cls = 'draw';
+        scores.draw++;
+      } else if (BEATS[playerChoice] === cpuChoice) {
+        msg = '🎉 你赢了！';
+        cls = 'win';
+        scores.player++;
+      } else {
+        msg = '💀 你输了...';
+        cls = 'lose';
+        scores.cpu++;
+      }
+
+      resultEl.textContent = msg;
+      resultEl.classList.add(cls);
+
+      document.getElementById('player-score').textContent = scores.player;
+      document.getElementById('cpu-score').textContent    = scores.cpu;
+      document.getElementById('draw-score').textContent   = scores.draw;
+    }
+
+    function resetScore() {
+      scores = { player: 0, cpu: 0, draw: 0 };
+      document.getElementById('player-score').textContent = '0';
+      document.getElementById('cpu-score').textContent    = '0';
+      document.getElementById('draw-score').textContent   = '0';
+      document.getElementById('player-hand').textContent  = '✊';
+      document.getElementById('cpu-hand').textContent     = '✊';
+      const r = document.getElementById('result-msg');
+      r.className = 'result-msg';
+      r.textContent = '選擇你的出拳！';
+    }
+  </script>
+</body>
+</html>
