@@ -4,7 +4,7 @@ A sleek, cyberpunk-styled Rock Paper Scissors game built with vanilla HTML/CSS/J
 
 ## 🎮 Live Demo
 
-👉 [Play on Vercel](https://janken-game.vercel.app)
+👉 [Play on Vercel](https://janken-game-drek079f6-changekai-projects.vercel.app)
 
 ## ✨ Features
 
